@@ -7,9 +7,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="DataAccess\Data\" />
-    <Folder Include="Services\Extensions\" />
-  </ItemGroup>
-
 </Project>
