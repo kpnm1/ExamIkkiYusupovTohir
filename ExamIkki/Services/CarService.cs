@@ -11,9 +11,13 @@ public class CarService : ICarService
     {
         carRepository = new CarRepository();
     }
+
     public Guid AddCar(CarDto carDto)
     {
+        if (carDto == null)
+            throw new ArgumentNullException(nameof(carDto));
 
+        carDto.Id = Guid.NewGuid();
         carRepository.AddCar(ConvertToCar(carDto));
         return carDto.Id;
     }
@@ -23,66 +27,77 @@ public class CarService : ICarService
         carRepository.DeleteCar(carId);
     }
 
-    public List<CarDto> GetAllCars()
+    public void UpdateCar(CarDto carDto)
     {
-        var cars = carRepository.GetAllCars().Select(x => ConvertToCarDto(x)).ToList();
-        return cars;
-    }
-
-    public List<CarDto> GetAllCarsByBrand(string brand)
-    {
-        return carRepository.GetAllCarsByBrand(brand).Select(x => ConvertToCarDto(x)).ToList();
-    }
-
-    public double GetAverageEngineCapacityByBrand(string brand)
-    {
-        return carRepository.GetAverageEngineCapacityByBrand(brand);
+        var car = ConvertToCar(carDto);
+        carRepository.UpdateCar(car);
     }
 
     public CarDto GetCarById(Guid carId)
     {
-        var res = carRepository.GetCarById(carId);
+        var car = carRepository.GetCarById(carId);
+        return ConvertToCarDto(car);
+    }
+
+    public List<CarDto> GetAllCars()
+    {
+        var cars = carRepository.GetAllCars();
+        return cars.Select(ConvertToCarDto).ToList();
+    }
+
+    public List<CarDto> GetAllCarsByBrand(string brand)
+    {
+        var res = carRepository.GetAllCars().Where(x => x.Brand == brand).ToList();
+        return res.Select(ConvertToCarDto).ToList();
+    }
+
+    public CarDto GetMostExpaensiveCar()
+    {
+        var res = carRepository.GetAllCars().OrderByDescending(x => x.Price).FirstOrDefault();
         return ConvertToCarDto(res);
     }
 
     public List<CarDto> GetCarsByYearRange(int startYear, int endYear)
     {
-        return carRepository.GetCarsByYearRange(startYear, endYear).Select(x => ConvertToCarDto(x)).ToList();
-    }
-
-    public List<CarDto> GetCarsSortedByPrice()
-    {
-        return carRepository.GetCarsSortedByPrice().Select(x => ConvertToCarDto(x)).ToList();
-    }
-
-    public List<CarDto> GetCarsWithinPriceRange(double minPrice, double maxPrice)
-    {
-        return carRepository.GetCarsWithinPriceRange(minPrice, maxPrice).Select(x => ConvertToCarDto(x)).ToList();
+        var cars = carRepository.GetAllCars().Where(c => c.Year >= startYear && c.Year <= endYear).ToList();
+        return cars.Select(ConvertToCarDto).ToList();
     }
 
     public CarDto GetLowestMileageCar()
     {
-        return ConvertToCarDto(carRepository.GetLowestMileageCar());
-    }
-
-    public CarDto GetMostExpaensiveCar()
-    {
-        return ConvertToCarDto(carRepository.GetMostExpaensiveCar());
-    }
-
-    public List<CarDto> GetRecentCars(int years)
-    {
-        return carRepository.GetRecentCars(years).Select(x => ConvertToCarDto(x)).ToList();
+        var res = carRepository.GetAllCars().OrderBy(c => c.Mileage).FirstOrDefault();
+        return ConvertToCarDto(res);
     }
 
     public List<CarDto> SearchCarsByModel(string keyword)
     {
-        return carRepository.SearchCarsByModel(keyword).Select(x => ConvertToCarDto(x)).ToList();
+        var res = carRepository.GetAllCars().Where(c => c.Model.Contains(keyword)).ToList();
+        return res.Select(ConvertToCarDto).ToList();
     }
 
-    public void UpdateCar(CarDto carDto)
+    public List<CarDto> GetCarsWithinPriceRange(double minPrice, double maxPrice)
     {
-        carRepository.UpdateCar(ConvertToCar(carDto));
+        var res = carRepository.GetAllCars().Where(c => c.Price >= minPrice && c.Price <= maxPrice).ToList();
+        return res.Select(ConvertToCarDto).ToList();
+    }
+
+    public double GetAverageEngineCapacityByBrand(string brand)
+    {
+        var brandCars = carRepository.GetAllCars().Where(c => c.Brand.Equals(brand));
+        return brandCars.Any() ? brandCars.Average(c => c.EngineCapacity) : 0;
+    }
+
+    public List<CarDto> GetCarsSortedByPrice()
+    {
+        var res = carRepository.GetAllCars().OrderBy(c => c.Price).ToList();
+        return res.Select(ConvertToCarDto).ToList();
+    }
+
+    public List<CarDto> GetRecentCars(int years)
+    {
+        int currentYear = DateTime.Now.Year;
+        var res = carRepository.GetAllCars().Where(c => c.Year >= (currentYear - years)).ToList();
+        return res.Select(ConvertToCarDto).ToList();
     }
 
     private Car ConvertToCar(CarDto carDto)

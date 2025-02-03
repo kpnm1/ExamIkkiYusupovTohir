@@ -1,16 +1,15 @@
 ﻿using ExamIkki.Services;
 using ExamIkki.Services.DTOs;
 
-namespace ExamIkki
+namespace ExamIkki;
+
+internal class Program
 {
-    internal class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
 
 
-            
+        
 
-        }
     }
 }
